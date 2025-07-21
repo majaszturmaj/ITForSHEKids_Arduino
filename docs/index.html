@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>AI Vision Controller</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .container {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      padding: 30px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 2.2rem;
+    }
+    
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 12px 25px;
+      font-size: 1rem;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+      min-width: 180px;
+    }
+    
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.25);
+    }
+    
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    #connectButton {
+      background: #27ae60;
+      box-shadow: 0 4px 8px rgba(39, 174, 96, 0.2);
+    }
+    
+    #connectButton:hover {
+      background: #219653;
+      box-shadow: 0 6px 12px rgba(39, 174, 96, 0.25);
+    }
+    
+    .webcam-section {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    #webcam-container {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      min-height: 320px;
+      min-width: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f4f8;
+    }
+    
+    #label-container {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      min-width: 250px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      align-self: flex-start;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    
+    #label-container div {
+      font-size: 1.1rem;
+      margin: 10px 0;
+      padding: 12px 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+      text-align: left;
+      transition: transform 0.2s;
+    }
+    
+    #label-container div:hover {
+      transform: translateX(5px);
+    }
+    
+    .status {
+      margin-top: 25px;
+      color: #7f8c8d;
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+    
+    footer {
+      margin-top: 30px;
+      color: #95a5a6;
+      font-size: 0.9rem;
+    }
+    
+    /* Model URL Controls */
+    .model-controls {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 0 auto 25px;
+      max-width: 650px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e0e7ff;
+    }
+    
+    .model-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .model-header h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+    
+    .model-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    #modelUrlInput {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 0.95rem;
+      transition: border-color 0.3s;
+    }
+    
+    #modelUrlInput:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    #loadModelButton {
+      padding: 12px 20px;
+      background: #8e44ad;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    #loadModelButton:hover {
+      background: #7d3c98;
+      transform: translateY(-2px);
+    }
+    
+    #urlStatusText {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      text-align: left;
+      padding: 5px 0;
+      min-height: 24px;
+    }
+    
+    .url-status-success {
+      color: #27ae60 !important;
+    }
+    
+    .url-status-error {
+      color: #e74c3c !important;
+    }
+    
+    .url-status-loading {
+      color: #3498db !important;
+    }
+    
+    .model-info {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 12px 15px;
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin-top: 10px;
+      text-align: left;
+    }
+    
+    .webcam-placeholder {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      padding: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Vision Controller</h1>
+    
+    <!-- Model URL Controls -->
+    <div class="model-controls">
+      <div class="model-header">
+        <h3>Model Configuration</h3>
+        <div id="urlStatusText">Enter a model URL or use default</div>
+      </div>
+      <div class="model-input-group">
+        <input type="text" id="modelUrlInput" placeholder="https://teachablemachine.withgoogle.com/models/...">
+        <button id="loadModelButton">Load Model</button>
+      </div>
+      <div class="model-info">
+        <strong>Note:</strong> Provide a valid Teachable Machine model URL. If left blank, the default model will be used.
+      </div>
+    </div>
+    
+    <div id="controls">
+      <button id="initButton">START VISION AI</button>
+      <button id="connectButton">CONNECT DEVICE</button>
+    </div>
+    
+    <div class="webcam-section">
+      <div id="webcam-container">
+        <div class="webcam-placeholder">Webcam feed will appear here after initialization</div>
+      </div>
+      <div id="label-container"></div>
+    </div>
+    
+    <p class="status" id="status">Ready to initialize...</p>
+    
+    <footer>Computer Vision + Arduino Integration | Dynamic Model Loading</footer>
+  </div>
+
+  <!-- TensorFlow.js and Teachable Machine Image library -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  
+  <script>
+    // === MODEL SETTINGS ===
+    const DEFAULT_URL = "https://teachablemachine.withgoogle.com/models/zcPc3VtFK/"; 
+    let model, webcam, labelContainer, maxPredictions;
+    let isModelActive = false;
+    let animationId = null;
+    let statusElement;
+    let currentModelUrl = DEFAULT_URL;
+
+    // === WEB SERIAL ===
+    let port;
+    let connectButton;
+    let initButton;
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      statusElement = document.getElementById('status');
+      connectButton = document.getElementById('connectButton');
+      initButton = document.getElementById('initButton');
+      const modelUrlInput = document.getElementById('modelUrlInput');
+      const loadModelButton = document.getElementById('loadModelButton');
+      const urlStatusText = document.getElementById('urlStatusText');
+
+      // Set default model URL in input
+      modelUrlInput.value = DEFAULT_URL;
+      
+      // === MODEL URL HANDLER ===
+      loadModelButton.addEventListener('click', async function() {
+        const url = modelUrlInput.value.trim();
+        if (!url) {
+          currentModelUrl = DEFAULT_URL;
+          urlStatusText.textContent = "Using default model";
+          urlStatusText.className = "url-status-success";
+          return;
+        }
+        
+        // Validate URL format
+        try {
+          // Normalize URL to ensure it ends with a slash
+          const normalizedUrl = url.endsWith('/') ? url : url + '/';
+          new URL(normalizedUrl); // Validate URL format
+          
+          urlStatusText.textContent = "Loading model...";
+          urlStatusText.className = "url-status-loading";
+          
+          // Save the new URL
+          currentModelUrl = normalizedUrl;
+          
+          // If the model is active, reload it immediately
+          if (isModelActive) {
+            await reloadModel();
+          }
+          else {
+            urlStatusText.textContent = `Model URL set: ${normalizedUrl}`;
+            urlStatusText.className = "url-status-success";
+          }
+          
+        } catch (e) {
+          urlStatusText.textContent = "Invalid URL format. Please enter a valid URL.";
+          urlStatusText.className = "url-status-error";
+        }
+      });
+      
+      // Handle Enter key in URL input
+      modelUrlInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          loadModelButton.click();
+        }
+      });
+
+      // === SERIAL CONNECTION HANDLER ===
+      connectButton.addEventListener('click', async () => {
+        if (port) {
+          try {
+            await port.close();
+            port = null;
+            connectButton.textContent = 'CONNECT DEVICE';
+            statusElement.textContent = "Device disconnected";
+            console.log('Serial: disconnected');
+          } catch (e) {
+            console.error('Serial disconnect error:', e);
+            statusElement.textContent = "Disconnect error";
+          }
+        } else {
+          try {
+            if (!navigator.serial) {
+              throw new Error("Web Serial API not supported in this browser");
+            }
+            
+            port = await navigator.serial.requestPort({ filters: [{ usbVendorId: 0x2341 }] });
+            await port.open({ baudRate: 9600 });
+            connectButton.textContent = 'DISCONNECT';
+            statusElement.textContent = "Device connected";
+            console.log('Serial: connected');
+          } catch (e) {
+            console.error('Serial connection error:', e);
+            statusElement.textContent = "Connection error: " + e.message;
+          }
+        }
+      });
+
+      // === MODEL INITIALIZATION ===
+      initButton.addEventListener('click', init);
+    });
+
+    async function sendSerial(cmd) {
+      if (!port || !port.writable) return;
+      
+      try {
+        const writer = port.writable.getWriter();
+        const encoder = new TextEncoder();
+        await writer.write(encoder.encode(cmd));
+        writer.releaseLock();
+        console.log('Sent:', cmd);
+      } catch (e) {
+        console.error('Send error:', e);
+        statusElement.textContent = "Send error: " + e.message;
+      }
+    }
+
+    // === TEACHABLE MACHINE ===
+    async function init() {
+      if (isModelActive) return;
+      
+      try {
+        statusElement.textContent = "Loading AI model...";
+        
+        // 1. Load model and metadata
+        const modelURL = currentModelUrl + "model.json";
+        const metadataURL = currentModelUrl + "metadata.json";
+        
+        // Show loading status
+        document.getElementById('urlStatusText').textContent = `Loading model from: ${currentModelUrl}`;
+        document.getElementById('urlStatusText').className = "url-status-loading";
+        
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // 2. Setup webcam
+        const flip = true;
+        webcam = new tmImage.Webcam(320, 320, flip);
+        await webcam.setup();
+        await webcam.play();
+        statusElement.textContent = "Webcam started";
+
+        // 3. Prepare containers
+        const webcamContainer = document.getElementById("webcam-container");
+        webcamContainer.innerHTML = '';
+        webcamContainer.appendChild(webcam.canvas);
+        
+        labelContainer = document.getElementById("label-container");
+        labelContainer.innerHTML = "";
+        
+        // Add class labels from the loaded model
+        const classLabels = model.getClassLabels();
+        for (let i = 0; i < maxPredictions; i++) {
+          const div = document.createElement("div");
+          div.id = `label-${i}`;
+          div.innerHTML = `${classLabels[i]}: 0%`;
+          labelContainer.appendChild(div);
+        }
+
+        // 4. Start prediction loop
+        statusElement.textContent = "Model active - detecting objects";
+        isModelActive = true;
+        initButton.textContent = 'AI ACTIVE';
+        initButton.disabled = true;
+        
+        // Update status
+        document.getElementById('urlStatusText').textContent = `Model loaded: ${currentModelUrl}`;
+        document.getElementById('urlStatusText').className = "url-status-success";
+        
+        predictLoop();
+      } catch (error) {
+        console.error('Initialization error:', error);
+        statusElement.textContent = "Error: " + error.message;
+        
+        // Update status
+        document.getElementById('urlStatusText').textContent = "Error loading model. Please check URL.";
+        document.getElementById('urlStatusText').className = "url-status-error";
+        
+        // Reset model state
+        isModelActive = false;
+        initButton.textContent = 'START VISION AI';
+        initButton.disabled = false;
+      }
+    }
+
+    // Function to reload the model while keeping the webcam running
+    async function reloadModel() {
+      if (!isModelActive) return;
+      
+      try {
+        statusElement.textContent = "Reloading AI model...";
+        
+        // 1. Load new model and metadata
+        const modelURL = currentModelUrl + "model.json";
+        const metadataURL = currentModelUrl + "metadata.json";
+        
+        // Show loading status
+        document.getElementById('urlStatusText').textContent = `Loading model from: ${currentModelUrl}`;
+        document.getElementById('urlStatusText').className = "url-status-loading";
+        
+        // Cancel current prediction loop
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        
+        // Load new model
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // 2. Update class labels
+        labelContainer = document.getElementById("label-container");
+        labelContainer.innerHTML = "";
+        
+        // Add new class labels from the loaded model
+        const classLabels = model.getClassLabels();
+        for (let i = 0; i < maxPredictions; i++) {
+          const div = document.createElement("div");
+          div.id = `label-${i}`;
+          div.innerHTML = `${classLabels[i]}: 0%`;
+          labelContainer.appendChild(div);
+        }
+
+        // 3. Resume prediction loop
+        statusElement.textContent = "Model updated - detecting objects";
+        
+        // Update status
+        document.getElementById('urlStatusText').textContent = `Model loaded: ${currentModelUrl}`;
+        document.getElementById('urlStatusText').className = "url-status-success";
+        
+        predictLoop();
+      } catch (error) {
+        console.error('Model reload error:', error);
+        statusElement.textContent = "Error: " + error.message;
+        
+        // Update status
+        document.getElementById('urlStatusText').textContent = "Error loading model. Please check URL.";
+        document.getElementById('urlStatusText').className = "url-status-error";
+        
+        // Restart prediction with previous model
+        predictLoop();
+      }
+    }
+
+    async function predictLoop() {
+      if (!isModelActive) return;
+      
+      try {
+        webcam.update();
+        await predict();
+        animationId = requestAnimationFrame(predictLoop);
+      } catch (error) {
+        console.error('Prediction loop error:', error);
+        statusElement.textContent = "Prediction error";
+      }
+    }
+
+    async function predict() {
+      try {
+        const prediction = await model.predict(webcam.canvas);
+        let topPrediction = null;
+        
+        // Update labels
+        prediction.forEach((p, i) => {
+          const percentage = (p.probability * 100).toFixed(1);
+          const labelElement = document.getElementById(`label-${i}`);
+          if (labelElement) {
+            labelElement.innerHTML = `${p.className}: ${percentage}%`;
+            labelElement.style.backgroundColor = p.probability > 0.7 ? '#e3f2fd' : 'white';
+          }
+          
+          if (!topPrediction || p.probability > topPrediction.probability) {
+            topPrediction = p;
+          }
+        });
+
+        // Send command for top prediction
+        if (topPrediction && topPrediction.probability > 0.80) {
+          const classIndex = model.getClassLabels().indexOf(topPrediction.className) + 1;
+          await sendSerial(classIndex.toString());
+        }
+      } catch (error) {
+        console.error('Prediction error:', error);
+      }
+    }
+  </script>
+</body>
+</html>
